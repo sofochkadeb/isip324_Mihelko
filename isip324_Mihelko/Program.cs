@@ -41,6 +41,7 @@ namespace isip324_Mihelko
                     }
                     names.Add(parts[0].Trim());
                     prices.Add(price);
+                }
                     int choice;
                     do
                     {
@@ -94,16 +95,16 @@ namespace isip324_Mihelko
                     if (prices[i] > max) max = prices[i];
                     if (prices[i] < min) min = prices[i];
                 }
-                Console.WriteLine("Сумма: ", sum, "руб.");
-                Console.WriteLine("Среднее: ", (sum / prices.Count), "руб.");
-                Console.WriteLine("Максимум: ", max, "руб.");
-                Console.WriteLine("Минимум: ", min, "руб.");
+                Console.WriteLine($"Сумма: "+ sum + "руб.");
+                Console.WriteLine($"Среднее: "+ (sum / prices.Count)+ "руб.");
+                Console.WriteLine($"Максимум: "+ max + "руб.");
+                Console.WriteLine($"Минимум: "+ min + "руб.");
             }
             static void BubbleSort(List<string> names, List<double> prices)
             {
                 for (int i=0; i<prices.Count-1; i++)
                 {
-                    for (int j=0; i<prices.Count-1-i;j++)
+                    for (int j=0; j<prices.Count-1;j++)
                     {
                         if (prices[j] > prices[j+1])
                         {
@@ -175,8 +176,3 @@ namespace isip324_Mihelko
 
           }
        }
-    }
-           
-        
-    
-
