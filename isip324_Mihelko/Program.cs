@@ -10,6 +10,17 @@ namespace isip324_Mihelko
     {
         static void Main(string[] args)
         {
+            namespace StoreApp
+             {
+                public enum Category
+                  {
+                    Food,
+                    Electronics,
+                    Clothes,
+                    Household
+                  }
+             }
+
         }
     }
 }
