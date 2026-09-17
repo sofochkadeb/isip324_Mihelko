@@ -19,7 +19,19 @@ namespace isip324_Mihelko
                     Clothes,
                     Household
                   }
+                public class Product
+                {
+                    private static int _counter = 1000;
+                    public int Code { get; }
+                    public string Name { get; set; }
+                    public decimal Price { get; set; }
+                    public int Quantity { get; set; }
+                    public Category Category { get; set; }
+                    public bool InStock => Quantity > 0;
+
+                }
              }
+            
 
         }
     }
