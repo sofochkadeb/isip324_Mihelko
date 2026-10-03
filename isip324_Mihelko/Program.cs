@@ -35,10 +35,27 @@ namespace isip324_Mihelko
             return words.ToArray(); //вернуть из метода массив строк, а не список
         }
 
-
-
-        static void AnalyzeNewText() //метод анализа нового текста
+        static int CountSentences(string text) //метод для подсчета предложений
         {
+            int count = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+                if (c == "." || c == "!" || c == "?")
+                {
+                    count++;
+                }
+            }
+            if (count == 0 && text.Length > 0)
+            {
+                count = 1;
+            }
+            return count;
+        }
+
+
+            static void AnalyzeNewText() //метод анализа нового текста
+            {
             Console.WriteLine("Введите текст: ");
             string text = Console.ReadLine();
             if (text.Length < 100)
