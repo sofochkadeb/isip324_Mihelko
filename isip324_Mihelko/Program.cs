@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,6 +9,7 @@ namespace isip324_Mihelko
     internal class Program
     {
         static List<string> allStatistics = new List<string>(); //для статистики создается отдельный список
+        static string currentReport = "";
 
         static string[] SplitIntoWords(string text) //метод разделения текста на слова 
         {
@@ -41,7 +41,7 @@ namespace isip324_Mihelko
             for (int i = 0; i < text.Length; i++)
             {
                 char c = text[i];
-                if (c == "." || c == "!" || c == "?")
+                if (c == '.' || c == '!' || c == '?')
                 {
                     count++;
                 }
@@ -94,6 +94,24 @@ namespace isip324_Mihelko
             return frequency;
         }
 
+        static void ShowOldStatistics()  //метод по выводу статистики по прошлым текстам
+        {
+            if (allStatistics.Count == 0)
+            {
+                Console.WriteLine("Нет сохраненной статистики");
+                return;
+            }
+            else
+            {
+                Console.WriteLine("Статистика по прошлым текстам: ");
+                for (int i = 0;i < allStatistics.Count;i++)
+                {
+                    Console.WriteLine("--- Текст №" + (i + 1) + " ---");
+                    Console.WriteLine(allStatistics[i]);
+                }
+            }
+        }
+
 
             static void AnalyzeNewText() //метод анализа нового текста
             {
@@ -127,6 +145,31 @@ namespace isip324_Mihelko
 
             int vowels, consonants;
             CountVowelsAndConsonants(text, out vowels, out consonants); //в две разные переменные записываются кол-во гласных и согласных, через метод
+
+            Dictionary<char, int> frequency = CountLetterFrequency(text);
+
+            Print("----- РЕЗУЛЬТАТ АНАЛИЗА -----");
+            Print("Слов: " + WordCount);
+            Print("Предложений: " + sentenceCount);
+            Print("Гласных: " + vowels);
+            Print("Согласных: " + consonants);
+            Print("Самое короткое слово: " + shortestWord);
+            Print("Самое длинное слово: " + longestWord);
+            Print("Частота букв:");
+
+            foreach (KeyValuePair<char, int> pair in frequency)
+            {
+                Print("  '" + pair.Key + "' -> " + pair.Value);
+            }
+            allStatistics.Add(currentReport);
+            currentReport = "";
+
+            Console.WriteLine("Статистика сохранена!");
+        }
+        static void Print(string message)
+        {
+            Console.WriteLine(message);       // печатаем на экран
+            currentReport += message + "\n";   // и сохраняем в список
         }
 
 
