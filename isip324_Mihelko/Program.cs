@@ -53,6 +53,25 @@ namespace isip324_Mihelko
             return count;
         }
 
+        static void CountVowelsAndConsonants(string text, out int vowels,out int consonants) //метод подсчета гласных и согласных в тексте
+        {
+            vowels = 0;
+            consonants = 0;
+            string vowelLetters = "аеёиоуыэюяaeiouy";
+            string consonantLetters = "бвгджзйклмнпрстфхцчшщbcdfghjklmnpqrstvwxz";
+            for (int i = 0; i<text.Length; i++)
+            {
+                char c = char.ToLower(text[i]);
+                if (vowelLetters.IndexOf(c) >= 0)
+                {
+                    vowels++;
+                }
+                else if (consonantLetters.IndexOf(c) >= 0)
+                {
+                    consonants++;
+                }
+            }
+        }
 
             static void AnalyzeNewText() //метод анализа нового текста
             {
