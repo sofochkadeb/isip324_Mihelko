@@ -10,6 +10,19 @@ namespace isip324_Mihelko
     internal class Program
     {
         static List<string> allStatistics;
+        static void AnalyzeNewText()
+        {
+            Console.WriteLine("Введите текст: ");
+            string text = Console.ReadLine();
+            if (text.Length < 100)
+            {
+                Console.WriteLine("Пользователь должен ввести минимум 100 символов");
+                return;
+            }
+            string[] words = text.SplitIntoWords(text)
+            int WordCount = words.Length;
+        }
+
         static void Main(string[] args)
         {
             bool work;
