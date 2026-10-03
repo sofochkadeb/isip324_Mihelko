@@ -62,7 +62,7 @@ namespace isip324_Mihelko
             for (int i = 0; i<text.Length; i++)
             {
                 char c = char.ToLower(text[i]);
-                if (vowelLetters.IndexOf(c) >= 0)
+                if (vowelLetters.IndexOf(c) >= 0) //если символ с встречается в заданной строке, то он плюсуется к кол-ву 
                 {
                     vowels++;
                 }
@@ -72,6 +72,28 @@ namespace isip324_Mihelko
                 }
             }
         }
+
+        static Dictionary<char, int> CountLetterFrequency(string text) //метод статистики по частоте каждой буквы(он вернёт словарь, где ключ — символ, значение — целое число)
+        {
+            Dictionary<char, int> frequency = new Dictionary<char, int>(); //пустой словарь с именем frequency
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = char.ToLower(text[i]);
+                if (char.IsLetter(c)) //если символ буква
+                {
+                    if (frequency.ContainsKey(c)) //если словарь уже содержит ключ с (метод возвращает true, если такая буква уже встречалась раньше)
+                    {
+                        frequency[c]= frequency[c]+1; //увеличить счетчик буквы на 1
+                    }
+                    else
+                    {
+                        frequency[c]= 1; //добавить новую букву со знач 1
+                    }
+                }
+            }
+            return frequency;
+        }
+
 
             static void AnalyzeNewText() //метод анализа нового текста
             {
