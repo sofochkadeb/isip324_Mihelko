@@ -14,24 +14,52 @@ namespace isip324_Mihelko
             Fiction,
             Fantasy,
             Detective,
-            Science
+            ScienceFiction
         };
         class Book
         {
             private int _id;
             public int Id { get => _id; }
             private string _title;
-            public string Title { get => _title; set => _title = value; }
+            public string Title 
+            { 
+              get { return _title; }
+              set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ArgumentException("У книги должно быть название");
+                    }
+                    else
+                    {
+                        _title = value;
+                    }
+                } 
+            
+            }
             private string _author;
-            public string Author { get => _author; set => _author = value; }
-            public Genre genre { get; set; }
+            public string Author
+            {
+                get { return _author; }
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ArgumentException("У книги должен быть автор. ");
+                    }
+                    else
+                    {
+                        _author = value;
+                    }
+                }
+
+            }
+            public Genre BookGenre { get; set; }
             private int _year;
             public int Year
             {
                 get
-                {
-                    return _year;
-                }
+                { return _year; }
                 set
                 {
                     if (value >= 1000 && value <= 2026)
@@ -40,10 +68,37 @@ namespace isip324_Mihelko
                     }
                     else
                     {
-                        
+                        throw new ArgumentException("Год издания книги должен быть в диапазоне от 1000 г. до 2026 г."); 
                     }
                 }
             }
+            private decimal _price;
+            public decimal Price
+            {
+                get {  return _price; }
+                set
+                {
+                    if (value < 0)
+                    {
+                        throw new ArgumentException("Цена книги не может быть отрицательной");
+                    }
+                    else
+                    {
+                        _price = value;
+                    }
+                }
+            }
+            public Book(Genre genre, int year, decimal price, string author, string title, int id)
+            {
+                Price = price;
+                Author = author;
+                Title= title;
+                Year = year;
+                BookGenre = genre;
+                _id = id;
+            }
+            public override string ToString() => $"[{Id}] \"{Title}\" — {Author} ({BookGenre}, {Year}) — {Price} руб.";
+
         }
 
 
