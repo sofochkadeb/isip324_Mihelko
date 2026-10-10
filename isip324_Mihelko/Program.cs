@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Authentication.ExtendedProtection.Configuration;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
@@ -240,6 +241,17 @@ namespace isip324_Mihelko
                 Console.WriteLine();
                 Console.Write("Нажмите Enter, чтобы продолжить...");
                 Console.ReadLine();
+            }
+        }
+        static class SeedData //класс для метода, который создает 5 тестовых книг
+        {
+            public static void Fill(LibraryService service)
+            {
+                service.AddBook("Мастер и Маргарита", "Булгаков", 250, 1967, Genre.Fiction);
+                service.AddBook("1984", "Оруэлл", 700, 1949, Genre.ScienceFiction);
+                service.AddBook("Властелин колец", "Толкин", 1200, 1954, Genre.Fantasy);
+                service.AddBook("Убийство в Восточном экспрессе", "Кристи", 550, 1934, Genre.Detective);
+                service.AddBook("Гарри Поттер и философский камень", "Роулинг", 950, 1997, Genre.Fantasy);
             }
         }
         static void Main(string[] args)
