@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace isip324_Mihelko
 {
@@ -163,7 +164,84 @@ namespace isip324_Mihelko
                 return _books.GroupBy(b => b.Author).ToList(); 
             }
         }
-
+        static class ConsoleHelper
+        {
+            public static string ReadNonEmptyString(string prompt) //метод чтобы строка не была пустой или только из пробелов
+            {
+                while (true)
+                {
+                    Console.Write(prompt); //напиши на экране ту подсказку, которую мне передали, и оставь курсор в той же строке
+                    string input = Console.ReadLine();
+                    if (!string.IsNullOrWhiteSpace(input))
+                    {
+                        return input;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Ошибка: поле не может быть пустым. Повторите.");
+                    }
+                }
+            }
+            public static int ReadInt(int min, int max, string prompt) //метод чтобы спрашивать, пока не получишь корректное целое в диапазоне [min, max]
+            {
+                while (true)
+                {
+                    Console.Write(prompt);
+                    string input = Console.ReadLine();
+                    if (int.TryParse(input, out int number) && number >= min && number <=max)
+                    {
+                        return number;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Ошибка: введите число от {min} до {max}. Повторите.");
+                    }
+                }
+            }
+            public static decimal ReadDecimal(decimal min, string prompt) //метод чтобы спрашивать, пока не получишь корректное число с копейками не меньше min
+            {
+                while (true)
+                {
+                    Console.Write(prompt);
+                    string input = Console.ReadLine();
+                    if (decimal.TryParse(input, out decimal number) && number >= min)
+                    {
+                        return number;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Ошибка: введите число не меньше {min}. Повторите.");
+                    }
+                }
+            }
+            public static Genre ReadGenre() //метод для выбора жанра из списка
+            {
+                Console.WriteLine("Выберите жанр: ");
+                Genre[] all = (Genre[])Enum.GetValues(typeof(Genre)); //создается массив жанров, (Genre[]) - означает что это будет массив именно жанров, потом метод возвращает все значения
+                for (int i = 0; i < all.Length;  i++)
+                {
+                    Console.WriteLine($"{i + 1}. {all[i]}");
+                }
+                int choice = ReadInt( 1, all.Length, "Ваш выбор: ");
+                return all[choice - 1];
+            }
+            public static void PrintBooks(IEnumerable<Book> books) //напечатать коллекцию книг, если пусто — сообщить «ничего не найдено», если не пусто — вывести построчно
+            {
+                if (!books.Any())
+                {
+                    Console.WriteLine("Ничего не найдено.");
+                    return;
+                }
+                foreach (Book b in books)
+                    Console.WriteLine(b);
+            }
+            public static void Pause() // после выполнения команды дать пользователю прочитать вывод и нажать Enter
+            {
+                Console.WriteLine();
+                Console.Write("Нажмите Enter, чтобы продолжить...");
+                Console.ReadLine();
+            }
+        }
         static void Main(string[] args)
         {
             foreach (IGrouping<string, Book> in service.GroupByAuthor())
