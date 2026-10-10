@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Security.Authentication.ExtendedProtection.Configuration;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -254,11 +258,144 @@ namespace isip324_Mihelko
                 service.AddBook("Гарри Поттер и философский камень", "Роулинг", 950, 1997, Genre.Fantasy);
             }
         }
+
         static void Main(string[] args)
         {
-            foreach (IGrouping<string, Book> in service.GroupByAuthor())
+            LibraryService service = new LibraryService(); //сервис — мозг программы, в нём список книг. Один на всё время работы Main
+            SeedData.Fill(service); //заполнить созданный список этими 5 тестовыми книгами
+            while (true)
             {
-                Console.WriteLine($"Автор: {group.Key} — {group.Count()} книг");
+                Console.Clear();
+                Console.WriteLine("===== БИБЛИОТЕКА =====");
+                Console.WriteLine("1.Добавить книгу");
+                Console.WriteLine("2.Удалить книгу по Id");
+                Console.WriteLine("3.Найти книгу");
+                Console.WriteLine("4.Сортировать книги");
+                Console.WriteLine("5.Самая дорогая и самая дешёвая");
+                Console.WriteLine("6.Группировка по авторам");
+                Console.WriteLine("7.Показать все книги");
+                Console.WriteLine("0.Выход");
+
+                int choice = ConsoleHelper.ReadInt(0, 7, "Ваш выбор: ");
+                try
+                {
+                    switch (choice)
+                    {
+                        case 1: HandleAdd(service); break;
+
+                        case 2: HandleDelete(service); break;
+
+                        case 3: HandleSearch(service); break;
+
+                        case 4: HandleSort(service); break;
+
+                        case 5: HandleMinMax(service); break;
+
+                        case 6: HandleGroupBy(service); break;
+
+                        case 7: HandleShowAll(service); break;
+
+                        case 0: return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Ошибка: " + ex.Message);
+                }               
+                ConsoleHelper.Pause();
+            }            
+        }
+        static void HandleShowAll(LibraryService service) //обработчик для 7 пункта меню
+        {
+            ConsoleHelper.PrintBooks(service.GetAll()); // Возьми у service все книги(GetAll), и передай их в PrintBooks, который их напечатает.
+        }
+        static void HandleMinMax(LibraryService service) //обработчик для 5 пункта меню
+        {
+            Book max = service.GetMostExpensive();  
+            Book min = service.GetMostCheapest();
+            if (max == null || min == null)
+            {
+                Console.WriteLine("Список книг пуст.");
+                return;
+            }
+            Console.WriteLine($"Самая дорогая книга: {max}");
+            Console.WriteLine($"Самая дешевая книга: {min}");
+        }
+        static void HandleGroupBy(LibraryService service) //обработчик для 6 пункта
+        {
+            // Получаем у сервиса список групп: каждая группа — автор + его книги
+            // groups — это List, в котором лежат IGrouping<string, Book> (ключ = имя автора, элементы = книги)
+            List<IGrouping<string, Book>> groups = service.GroupByAuthor(); 
+            if (groups.Count == 0)
+            {
+                Console.WriteLine("Список книг пуст.");
+                return;
+            }
+            foreach (IGrouping<string, Book> group in groups)
+            {
+                // group.Key — имя автора (ключ группы)
+                // group.Count() — сколько книг у этого автора (LINQ-метод Count)
+                Console.WriteLine("Автор: " + group.Key + "-" + group.Count() + "книг");
+            }
+        }
+        static void HandleAdd(LibraryService service) //обработчик для 1 пункта 
+        {
+            string title = ConsoleHelper.ReadNonEmptyString("Название: ");
+            string author = ConsoleHelper.ReadNonEmptyString("Автор: ");
+            Genre genre = ConsoleHelper.ReadGenre();
+            int year = ConsoleHelper.ReadInt(1000, 2026, "Год издания: ");
+            decimal price = ConsoleHelper.ReadDecimal(0m, "Цена: ");
+            Book book = service.AddBook(title, author, price, year, genre);
+            Console.WriteLine($"Книга добавлена: {book}");
+        }
+        static void HandleDelete(LibraryService service) //обработчик для 2 пункта
+        {
+            int id = ConsoleHelper.ReadInt(1, int.MaxValue, "ID для удаления: ");
+            bool ok = service.DeleteById(id);
+            if (ok == true)
+            {
+                Console.WriteLine("Книга удалена.");
+            }
+            else
+            {
+                Console.WriteLine("Книга с таким Id не найдена.");
+            }
+        }
+        static void HandleSearch(LibraryService service) //обработчик для 3 пункта
+        {
+            Console.WriteLine("1. По названию");
+            Console.WriteLine("2. По автору");
+            Console.WriteLine("3. По жанру");
+            int choice = ConsoleHelper.ReadInt(1, 3, "Выбор: ");
+            switch (choice)
+            {
+                case 1:
+                    string titlepart = ConsoleHelper.ReadNonEmptyString("Часть названия: ");
+                    ConsoleHelper.PrintBooks(service.SearchByTitle(titlepart));
+                    break;
+                case 2:
+                    string authorpart = ConsoleHelper.ReadNonEmptyString("Часть автора: ");
+                    ConsoleHelper.PrintBooks(service.SearchByAuthor(authorpart));
+                    break;
+                case 3:
+                    Genre genre = ConsoleHelper.ReadGenre();
+                    ConsoleHelper.PrintBooks(service.SearchByGenre(genre));
+                    break;
+            }
+        }
+        static void HandleSort(LibraryService service) //обработчик для 4 пункта
+        {
+            Console.WriteLine("1. По названию");
+            Console.WriteLine("2. По году");
+            int choice = ConsoleHelper.ReadInt(1, 2, "Выбор: ");
+            switch (choice)
+            {
+                case 1:
+                    ConsoleHelper.PrintBooks(service.SortByTitle());
+                    break;
+                case 2:
+                    ConsoleHelper.PrintBooks(service.SortByYear());
+                    break;
             }
         }
     }
