@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
@@ -112,10 +113,63 @@ namespace isip324_Mihelko
                 //_id — «Id, который уже присвоен этой конкретной книге».
                 return book;
             }
+            public List<Book> GetAll() //метод для возвращения всего списка книг
+            {
+                return _books;
+            }
+            public bool DeleteById(int id) //метод удаления через перебор параметра id
+            {
+                Book book = _books.FirstOrDefault(b => b.Id == id); //LINQ FirstOrDefault если нашел то ок, не нашел то null
+                if (book == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    _books.Remove(book); //удалить книгу
+                    return true;
+                }
+            }
+            public List<Book> SearchByTitle(string part) //после public ставится тот тип данных, который возвращает метод (return)
+            {
+                return _books.Where(b => b.Title.ToLower().Contains(part.ToLower())).ToList(); //список книг возьми, проверь где название в нижнем ргеистре содержит параметр часть в нижнем регистре, и запиши в список
+            }
+            public List<Book> SearchByAuthor(string part)
+            {
+                return _books.Where(b => b.Author.ToLower().Contains(part.ToLower())).ToList(); //аналогично с методом поиска по части названия для части автора
+            }
+            public List<Book> SearchByGenre(Genre genre) //возьми перечисление Genre, с параметром genre
+            {
+                return _books.Where(b => b.BookGenre == genre).ToList(); //найди в списке _books одинаковые элементы свойства BookGenre с параметром genre(взятый из перечисления) 
+            }
+            public List<Book> SortByTitle() //сортировка по названию по возрастанию (чтобы вернулся список)
+            {
+                return _books.OrderBy(b => b.Title).ToList();
+            }
+            public List<Book> SortByYear() //сортировка по году по возрастанию (чтобы вернулся список)
+            {
+                return _books.OrderBy(b => b.Year).ToList();
+            }
+            public Book GetMostExpensive() //вернуть первую самую дорогую книжку по убыванию (экземпляр одной книги)
+            {
+                return _books.OrderByDescending(b => b.Price).FirstOrDefault();
+            }
+            public Book GetMostCheapest() //вернуть первую самую дешевую книжку по возрастанию (экземпляр одной книги)
+            {
+                return _books.OrderBy(b => b.Price).FirstOrDefault();
+            }
+            public List<IGrouping<string, Book>> GroupByAuthor() //группа (интерфейс), у которой ключ — строка (имя автора), а содержимое — книги, показанная в виде списка
+            {
+                return _books.GroupBy(b => b.Author).ToList(); 
+            }
         }
+
         static void Main(string[] args)
         {
-           
+            foreach (IGrouping<string, Book> in service.GroupByAuthor())
+            {
+                Console.WriteLine($"Автор: {group.Key} — {group.Count()} книг");
+            }
         }
     }
 }
