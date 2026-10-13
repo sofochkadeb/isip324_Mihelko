@@ -31,6 +31,94 @@ namespace isip324_Mihelko
         {
             public CourseCapacityExceededException(string message) : base(message) { }
         }
+
+        interface IIdentifiable //у сущностей у всех будет Id, любой класс,
+        {                           //который будет реализовывать интерфейс, должен иметь свойство Id
+            int Id { get; }
+        }
+        interface IValidatable //класс, который реализует интерфейс, должен уметь
+        {                           //сказать, корректен ли он, если нет, то объяснить, что не так
+            bool IsValid(out string error);
+            
+        }
+        abstract class Person
+        {
+            private int _id;
+            private string _firstName;
+            private string _lastName;
+            private int _age;
+            private string _email;
+            private string _phone;
+            private Gender _gender;
+            public int Id
+            {
+                get => _id;
+            }
+            public string FirstName
+            {
+                get => _firstName;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ValidationException("Имя не может быть пустым.");
+                    }
+                    else
+                    {
+                        _firstName = value;
+                    }
+                }
+            }
+            public string LastName
+            {
+                get => _lastName;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ValidationException("Фамилия не может быть пустой.");
+                    }
+                    else
+                    {
+                        _lastName = value;
+                    }
+                }
+            }
+            public int Age
+            {
+                get => _age;
+                set
+                {
+                    if (value < 5 && value > 110)
+                    {
+                        throw new ValidationException("Возраст должен быть в пределах разумного.");
+                    }
+                    else
+                    {
+                        _age = value;
+                    }
+                }
+            }
+            public string Email
+            {
+                get => _email;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ValidationException("Почтовый адрес не может быть пустой.");
+                    }
+                    else if ( Regex.IsMatch(value,"^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$") == false)
+                    {
+                        throw new ValidationException("Почтовый адрес должен подходить под шаблон.");
+                    }
+                    else
+                    {
+                        _email = value;
+                    }
+                }
+            }
+        }
         static void Main(string[] args)
         {
         }
