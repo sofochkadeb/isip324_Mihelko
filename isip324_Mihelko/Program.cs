@@ -84,6 +84,35 @@ namespace isip324_Mihelko
                     }
                 }
             }
+            public string Phone
+            {
+                get => _phone;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        throw new ValidationException("Номер телефона не может быть пустым. ");
+                    }
+                    bool isValid = true;
+                    foreach (char symbol in value)
+                    {
+                        if (char.IsDigit(symbol))
+                            isValid = true;
+                        else if (symbol == '+' || symbol == '-' || symbol == ' ' || symbol == '(' || symbol == ')')
+                            isValid = true;
+                        else
+                        {
+                            isValid = false;
+                            break;
+                        }
+                    }
+                    if (isValid == false)
+                    {
+                        throw new ValidationException("Номер телефона должен содержать разрешенные для него символы");
+                    }  
+                    _phone = value.Trim();   
+                }
+            }
             public int Age
             {
                 get => _age;
@@ -118,6 +147,22 @@ namespace isip324_Mihelko
                     }
                 }
             }
+            public string FullName
+            {
+                get { return FirstName + ' ' + LastName; }
+            }
+            public Gender Gender { get => _gender; set => _gender = value; }
+            
+            public Person(string firstName, string lastName, int age, string phone, string email, Gender gender)
+            {
+                FirstName = firstName;
+                LastName = lastName;    
+                Age = age;
+                Email = email;
+                Phone = phone;
+                Gender = gender;
+            }
+            public abstract string GetInfo();
         }
         static void Main(string[] args)
         {
