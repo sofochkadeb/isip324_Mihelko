@@ -134,7 +134,7 @@ namespace isip324_Mihelko
             public Armor Armor { get; protected set; } //текущие доспехи
 
             //конструктор
-            public Player(string name,int maxHP, int attack, int defense,  Weapon weapon, Armor armor) 
+            public Player(string name,int maxHP, int attack, int defense,  Weapon weapon = null, Armor armor = null) 
                 : base(name, maxHP, attack, defense)
             {
                 Weapon = weapon ;
@@ -261,22 +261,22 @@ namespace isip324_Mihelko
             }
         }
 
-        public class VVG : Goblin
+        public class VVG : Goblin //1 босс
         {
             public VVG(string name, int maxHP, int attack, int defense) 
-                : base(name, maxHP, attack, defense) 
+                : base(name, maxHP, attack, defense)  
             {
                 CriticalChance = 30;
             }
         }
 
-        public class Kovalsky : Skeleton
+        public class Kovalsky : Skeleton //2 босс
         {
             public Kovalsky(string name, int maxHP, int attack, int defense)
                 : base(name, maxHP, attack, defense) { }
         }
 
-        public class ArchimageCpp : Mag
+        public class ArchimageCpp : Mag //3 босс
         {
             public ArchimageCpp(string name, int maxHP, int attack, int defense)
                 : base(name, maxHP, attack, defense)
@@ -285,7 +285,7 @@ namespace isip324_Mihelko
             }
         }
 
-        public class PestovC : Skeleton
+        public class PestovC : Skeleton //4 босс
         {
             public int FreezeChance { get; protected set; } = 15;
             public PestovC(string name, int maxHP, int attack, int defense)
@@ -316,8 +316,94 @@ namespace isip324_Mihelko
             }
         }
 
+        public class Game
+        {
+            //приватные поля класса
+            private Player _player; //сам игрок
+            private Random _random; //единый генератор рандома
+            private int _turnCounter; //счетчик ходов
+            private bool _isFrozen; //флаг заморозки
 
+            public Game(Player player, Random random, int turnCounter, bool isFrozen)
+            {
+                _player = player;
+                _random = random;
+                _turnCounter = turnCounter;
+                _isFrozen = isFrozen;
+            }
 
+            public void Run()
+            {
+                _player = new Player("Герой", 100, 10, 5);
+                Console.WriteLine("--- Добро пожаловать в игру! ---");
+                Console.WriteLine($"Ваш герой: {_player.Name}");
+                Console.WriteLine($"HP: {_player.CurrentHP}/{_player.MaxHP} | Атака: {_player.Attack} | Защита: {_player.Defense}");
+                Console.WriteLine("---------------------------------");
+                while (_player.IsAlive())
+                {
+                    Console.WriteLine($"\n--- Ход {_turnCounter + 1} ---");
+                    Console.WriteLine($"Ваше HP: {_player.CurrentHP}/{_player.MaxHP}");
+
+                    NextTurn();
+                    if (!_player.IsAlive())
+                    {
+                        break;
+                    }
+                }
+                Console.WriteLine("\n---------------------------------");
+                Console.WriteLine(" Вы погибли! Игра окончена.");
+                Console.WriteLine($"Вы продержались {_turnCounter} ходов.");
+                Console.WriteLine("-----------------------------------");
+            }
+            private void NextTurn()
+            {
+                _turnCounter++;
+                if (_turnCounter % 10 == 0)
+                {
+                    StartBattle(CreateRandomEnemy(true));
+                }
+                else if (_random.Next(1, 101) <= 50)
+                {
+                    OpenChest();
+                }
+                else
+                {
+                    StartBattle(CreateRandomEnemy(false));
+                }
+            }
+
+            private Enemy CreateRandomEnemy(bool isBoss)
+            {
+                int choice = _random.Next(1, isBoss ? 5 : 4);
+                if (!isBoss)
+                {
+                    switch (choice)
+                    {
+                        case 1:
+                            return new Goblin("Гоблин", 30, 8, 2);
+                        case 2:
+                            return new Skeleton("Скелет", 25, 10, 4);
+                        default:
+                            return new Mag("Маг", 20, 12, 1);
+                    }
+                }
+                else
+                {
+                    switch (choice)
+                    {
+                        case 1:
+                            return new VVG("ВВГ", (int)(30 * 2.0), (int)(8 * 1.5), (int)(2 * 1.2));
+                        case 2:
+                            return new Kovalsky("Ковальский", (int)(25 * 2.5), (int)(10 * 1.3), (int)(4 * 1.4));
+                        case 3:
+                            return new ArchimageCpp("Архимаг C++", (int)(20 * 1.8), (int)(12 * 1.6), (int)(1 * 1.1));
+                        default:
+                            return new PestovC("Пестов С-- ", (int)(25 * 1.3), (int)(10 * 1.8), (int)(4 * 0.6));
+                    }
+                }
+            }
+            
+        }
         static void Main(string[] args)
         {
         }
