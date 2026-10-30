@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static isip324_Mihelko.Program;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace isip324_Mihelko
 {
@@ -17,7 +18,7 @@ namespace isip324_Mihelko
     {
         Goblin, //гоблин
         Skeleton, //скелет
-        Mage, //маг
+        Mag, //маг
         VVG, //ВВГ (гоблин)
         Kovalsky, //Ковальский (скелет)
         ArchimageCpp, //архимаг С++ (маг)
@@ -126,14 +127,15 @@ namespace isip324_Mihelko
         }
 
 
-        public class Player : Character //игрок
+        public class Player : Character //класс игрок, наследуется от персонажа
         {
             //свойства
             public Weapon Weapon { get; protected set; } //текущее оружие
             public Armor Armor { get; protected set; } //текущие доспехи
 
             //конструктор
-            public Player(string name,int maxHP, int attack, int defense,  Weapon weapon, Armor armor) : base(name, maxHP, attack, defense)
+            public Player(string name,int maxHP, int attack, int defense,  Weapon weapon, Armor armor) 
+                : base(name, maxHP, attack, defense)
             {
                 Weapon = weapon ;
                 Armor = armor ;
@@ -176,10 +178,11 @@ namespace isip324_Mihelko
             }
         }
 
-        public class Enemy : Character //враг
+        public class Enemy : Character //общий класс врага, наследуется от персонажа
         {
             public EnemyType Type { get; protected set; }
-            public Enemy(EnemyType type, string name, int maxHP, int attack, int defense) : base(name, maxHP, attack, defense)
+            public Enemy(EnemyType type, string name, int maxHP, int attack, int defense)
+                : base(name, maxHP, attack, defense)
             {
                 Type = type;
             }
@@ -202,6 +205,101 @@ namespace isip324_Mihelko
                 }
                 return new AttackResult(attack, false, false) ; //без критов и заморозки
 
+            }
+        }
+
+        public class Goblin : Enemy
+        {
+            public int CriticalChance { get; protected set; } = 20; //шанс крит урона
+            public Goblin(string name, int maxHP, int attack, int defense) 
+                : base(EnemyType.Goblin, name, maxHP, attack, defense) { }
+            public override AttackResult PerformAttack(Player target)
+            {
+                AttackResult result = base.PerformAttack(target);
+                Random random = new Random();
+                int chance = random.Next(1, 101);
+                if (chance <= CriticalChance)
+                {
+                    result.Damage = (int)(result.Damage* 1.5);
+                    result.IsCritical = true;
+                }
+                return result ;
+            }
+        }
+
+        public class Skeleton : Enemy
+        {
+            public Skeleton(string name, int maxHP, int attack, int defense) 
+                : base(EnemyType.Skeleton, name, maxHP, attack, defense) { }
+            public override AttackResult PerformAttack(Player target)
+            {
+                int attack = this.Attack; //берет атаку скелета
+                //не вычитает защиту игрока
+                if (attack < 0) //если вдруг урон отриц, то по сути мы нанесем 0 урона
+                {
+                    attack = 0;
+                }
+                return new AttackResult(attack, false, false); //без критов и заморозки
+            }
+        }
+
+        public class Mag : Enemy
+        {
+            public int FreezeChance { get; protected set; } = 20;
+            public Mag(string name, int maxHP, int attack, int defense) 
+                : base(EnemyType.Mag, name, maxHP, attack, defense) { }
+            public override AttackResult PerformAttack(Player target)
+            {
+                AttackResult result = base.PerformAttack(target);
+                Random random = new Random();
+                int chance = random.Next(1, 101);
+                if (chance <= FreezeChance)
+                {
+                    result.IsFrozen = true;
+                }
+                return result;
+            }
+        }
+
+        public class VVG : Goblin
+        {
+            public VVG(string name, int maxHP, int attack, int defense) 
+                : base(name, maxHP, attack, defense) 
+            {
+                CriticalChance = 30;
+            }
+        }
+
+        public class Kovalsky : Skeleton
+        {
+            public Kovalsky(string name, int maxHP, int attack, int defense)
+                : base(name, maxHP, attack, defense) { }
+        }
+
+        public class ArchimageCpp : Mag
+        {
+            public ArchimageCpp(string name, int maxHP, int attack, int defense)
+                : base(name, maxHP, attack, defense)
+            {
+                FreezeChance = 30;
+            }
+        }
+
+        public class PestovC : Skeleton
+        {
+            public int FreezeChance { get; protected set; } = 15;
+            public PestovC(string name, int maxHP, int attack, int defense)
+                : base(name, maxHP, attack, defense) { }
+            public override AttackResult PerformAttack(Player target)
+            {
+                AttackResult result = base.PerformAttack(target);
+                Random random = new Random();
+                int chance = random.Next(1, 101);
+                if (chance <= FreezeChance)
+                {
+                    result.IsFrozen = true;
+                }
+                return result;
             }
         }
 
