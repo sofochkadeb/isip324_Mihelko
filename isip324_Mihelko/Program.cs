@@ -323,6 +323,7 @@ namespace isip324_Mihelko
             private Random _random; //единый генератор рандома
             private int _turnCounter; //счетчик ходов
             private bool _isFrozen; //флаг заморозки
+            private bool _isDefending = false; //флаг защиты
 
             public Game(Player player, Random random, int turnCounter, bool isFrozen)
             {
@@ -334,7 +335,6 @@ namespace isip324_Mihelko
 
             public void Run()
             {
-                _player = new Player("Герой", 100, 10, 5);
                 Console.WriteLine("--- Добро пожаловать в игру! ---");
                 Console.WriteLine($"Ваш герой: {_player.Name}");
                 Console.WriteLine($"HP: {_player.CurrentHP}/{_player.MaxHP} | Атака: {_player.Attack} | Защита: {_player.Defense}");
@@ -402,10 +402,212 @@ namespace isip324_Mihelko
                     }
                 }
             }
-            
+            private void StartBattle(Enemy enemy)
+            {
+                Console.WriteLine("--------------------------------");
+                Console.WriteLine($"Вы встретили {enemy.Name}!");
+                Console.WriteLine($"HP: {enemy.CurrentHP}/{enemy.MaxHP} | Атака: {enemy.Attack} | Защита: {enemy.Defense}");
+                Console.WriteLine("---------------------------------");
+
+                while (_player.IsAlive() && enemy.IsAlive()) //главный цикл боя
+                {
+                    if (_isFrozen == true) //проверка заморозки игрока
+                    {
+                        Console.WriteLine("Вы заморожены и пропускаете ход! ");
+                        _isFrozen = false;
+                    }
+
+                    //ход игрока
+                    else
+                    {
+
+                        int choice;
+                        bool validInput = false;
+                        do
+                        {
+                            Console.WriteLine("1. Атаковать | 2. Защищаться ");
+                            validInput = int.TryParse(Console.ReadLine(), out choice)
+                                && (choice == 1 || choice == 2);
+                            if (!validInput) Console.WriteLine("Введите 1 или 2!");
+                        } while (!validInput);
+
+                        if (choice == 1) //если выбрана атака
+                        {
+                            int damage = _player.CalculateDamage(enemy);
+                            enemy.TakeDamage(damage);
+                            Console.WriteLine($"Вы нанесли {damage} урона!");
+                            _isDefending = false;
+                        }
+                        else if (choice == 2) //если выбрана защита
+                        {
+                            _isDefending = true;
+                            Console.WriteLine("Вы встали в защиту. ");
+                        }
+                    }
+                    if (!enemy.IsAlive()) //проверка смерти врага
+                    {
+                        Console.WriteLine($"Вы победили {enemy.Name}!");
+                        break;
+                    }
+
+                    //ход врага
+                    AttackResult result = enemy.PerformAttack(_player); //получить результат атаки
+                    if (_isDefending == true) //если игрок в защите
+                    {
+                        int rand = _random.Next(1, 101);
+                        if (rand <= 40)
+                        {
+                            Console.WriteLine("Вы уклонились! Урон равен 0.");
+                            result.Damage = 0;
+                        }
+                        else
+                        {
+                            //срабатывает блок, 70-100% от защиты доспеха
+                            int armorDefense = 0;
+                            if (_player.Armor != null)
+                            {
+                                armorDefense = _player.Armor.DefenseBonus;
+                            }
+                            //генерация процента блока от 70 до 100
+                            int blockPercent = _random.Next(70, 101);
+
+                            //сколько урона поглотил доспех
+                            int blockedAmount = (int)(armorDefense * (blockPercent / 100.0));
+                            //вычитаем блок из урона врага
+                            result.Damage -= blockedAmount;
+
+                            if (result.Damage < 0) result.Damage = 0;
+                            Console.WriteLine($"Вы заблокировали {blockedAmount} урона доспехом!");
+                        }
+                        _isDefending = false;
+                    }
+
+                    _player.TakeDamage(result.Damage);
+                    Console.WriteLine($"Враг нанес вам {result.Damage} урона.");
+
+                    if (result.IsCritical)
+                    {
+                        Console.WriteLine("КРИТИЧЕСКИЙ УДАР!!!");
+                    }
+
+                    if (result.IsFrozen)
+                    {
+                        _isFrozen = true;
+                        Console.WriteLine("Вас заморозили! Пропуск хода...");
+                    }
+
+                    //ВЫВОД СОСТОЯНИЯ
+                    Console.WriteLine("--------------------------------");
+                    Console.WriteLine($"Итоговое состояние: ");
+                    Console.WriteLine($"HP игрока: {_player.CurrentHP}/{_player.MaxHP} | HP врага: {enemy.CurrentHP}/{enemy.MaxHP}");
+                    Console.WriteLine("---------------------------------");
+                }
+                if (!_player.IsAlive())
+                {
+                    Console.WriteLine("Вы пали смертью храбрых...");
+                }
+                Console.WriteLine("-------------------------------");
+            }
+
+            private void OpenChest()
+            {
+                Console.WriteLine("--------------------------------");
+                Console.WriteLine($"Вы нашли сундук!");
+
+                int itemType = _random.Next(1, 4);
+                if (itemType == 1)
+                {
+                    Potion potion = new Potion("Зелье");
+                    _player.Heal();
+                    Console.WriteLine("Вы нашли зелье и полностью восстановили здоровье!");
+                }
+                if (itemType == 2)
+                {
+                    Weapon newWeapon = new Weapon(_random.Next(5, 20), "Стальной меч");
+                    Console.WriteLine($"Вы нашли оружие: {newWeapon}");
+                    if (_player.Weapon != null)
+                    {
+                        Console.WriteLine($"Ваше текущее оружие: {_player.Weapon}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("У вас нет оружия.");
+                    }
+
+                    Console.WriteLine("1. Взять новое оружие");
+                    Console.WriteLine("2. Выбросить его");
+
+                    int choice;
+                    bool valid = false;
+                    do
+                    {
+                        valid = int.TryParse(Console.ReadLine(), out choice) && (choice == 1 || choice == 2);
+                        if (!valid) Console.WriteLine("Введите 1 или 2!");
+                    } while (!valid);
+
+                    if (choice == 1)
+                    {
+                        _player.EquipWeapon(newWeapon);
+                        Console.WriteLine("Вы взяли новое оружие!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Вы выбросили оружие.");
+                    }
+                }
+                if (itemType == 3)
+                {
+                    Armor newArmor = new Armor(_random.Next(3, 15), "Стальные доспехи");
+                    Console.WriteLine($"Вы нашли доспехи: {newArmor}");
+                    if (_player.Armor != null)
+                    {
+                        Console.WriteLine($"Ваши текущие доспехи: {_player.Armor}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("У вас нет доспехов.");
+                    }
+
+                    Console.WriteLine("1. Взять новые доспехи");
+                    Console.WriteLine("2. Выбросить их");
+
+                    int choice;
+                    bool valid = false;
+                    do
+                    {
+                        valid = int.TryParse(Console.ReadLine(), out choice) && (choice == 1 || choice == 2);
+                        if (!valid) Console.WriteLine("Введите 1 или 2!");
+                    } while (!valid);
+
+                    if (choice == 1)
+                    {
+                        _player.EquipArmor(newArmor);
+                        Console.WriteLine("Вы взяли новые доспехи!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Вы выбросили доспехи.");
+                    }
+                }
+                Console.ReadLine();
+            }
+
         }
+
         static void Main(string[] args)
         {
+            //создаем игрока
+            Player player = new Player("Герой", 100, 10, 5, null, null);
+            //создаем генератор случайных чисел
+            Random random = new Random();
+            //создаем игру, передавая игрока, рандом, счетчик ходов и флаг заморозки
+            Game game = new Game(player, random, 0, false);
+            //запускаем игру
+            game.Run();
+
+            //чтобы консоль не закрылась сразу после окончания игры
+            Console.WriteLine("Нажмите Enter для выхода...");
+            Console.ReadLine();
         }
     }
 }
