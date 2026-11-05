@@ -8,12 +8,6 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace isip324_Mihelko
 {
-    enum EventType
-    {
-        Chest, //сундук
-        Enemy, //враг
-        Boss //босс
-    }
     enum EnemyType
     {
         Goblin, //гоблин
@@ -30,11 +24,7 @@ namespace isip324_Mihelko
         Weapon, //оружие
         Armor //доспех
     }
-    enum PlayerAction
-    {
-        Attack, //атака
-        Defend //защита
-    }
+
     internal class Program
     {
         //ИЕРАРХИЯ ПРЕДМЕТОВ!!!
@@ -420,7 +410,6 @@ namespace isip324_Mihelko
                     //ход игрока
                     else
                     {
-
                         int choice;
                         bool validInput = false;
                         do
@@ -454,10 +443,9 @@ namespace isip324_Mihelko
                     AttackResult result = enemy.PerformAttack(_player); //получить результат атаки
                     if (_isDefending == true) //если игрок в защите
                     {
-                        int rand = _random.Next(1, 101);
-                        if (rand <= 40)
+                        if (_player.Defend()) 
                         {
-                            Console.WriteLine("Вы уклонились! Урон равен 0.");
+                            Console.WriteLine("Вы уклонились!");
                             result.Damage = 0;
                         }
                         else
@@ -591,7 +579,6 @@ namespace isip324_Mihelko
                 }
                 Console.ReadLine();
             }
-
         }
 
         static void Main(string[] args)
