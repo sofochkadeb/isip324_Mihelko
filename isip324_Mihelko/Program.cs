@@ -255,6 +255,7 @@ namespace isip324_Mihelko
         {
             while (true)
             {
+                Console.Clear();
                 if (CurrentUser == null)
                 {
                     Console.WriteLine("---------МЕНЮ---------");
@@ -285,6 +286,7 @@ namespace isip324_Mihelko
                 }
                 else
                 {
+                    Console.Clear();
                     Console.WriteLine($"-------МЕНЮ ({CurrentUser.Username})-------");
                     Console.WriteLine("1. Посмотреть товары");
                     Console.WriteLine("2. Корзина");
