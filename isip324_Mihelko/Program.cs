@@ -12,7 +12,7 @@ namespace isip324_Mihelko
     internal class Program
     {
         static User CurrentUser = null;
-        public static void Register()
+        public static void Register() //регистрация в приложении
         {
             Console.WriteLine("Введите логин: ");
             string login = Console.ReadLine();
@@ -47,7 +47,7 @@ namespace isip324_Mihelko
                 Console.ReadKey();
             }
         }
-        public static void Login()
+        public static void Login() //метод входа в приложение
         {
             Console.WriteLine("Введите логин: ");
             string login = Console.ReadLine();
@@ -67,7 +67,7 @@ namespace isip324_Mihelko
                 Console.ReadKey();                
             }           
         }
-        public static void ShowProducts()
+        public static void ShowProducts() //метод для показа вообще всех сущ товаров
         {
             Console.Clear();
             Console.WriteLine("-------КАТАЛОГ ТОВАРОВ--------");
@@ -91,7 +91,7 @@ namespace isip324_Mihelko
                 Console.ReadKey();
             }
         }
-        public static void AddToCart(int productId) 
+        public static void AddToCart(int productId)  //метод добавления товара в корзину
         {
             //поиск по корзине: этот юзер положил этот товар
             var cartItem = Core.Context.CartItem.FirstOrDefault(p => p.UserId == CurrentUser.Id 
@@ -112,7 +112,7 @@ namespace isip324_Mihelko
             Console.WriteLine("Товар добавлен в корзину!");
             Console.ReadKey();
         }
-        public static void ShowCart()
+        public static void ShowCart() //метод для показа товаров в корзине + перекидывает на метод оформ заказа
         {
             Console.Clear();
             Console.WriteLine("-------МОЯ КОРЗИНА--------");
@@ -139,16 +139,18 @@ namespace isip324_Mihelko
             switch (choice)
             {
                 case "1":
-                    Checkout(items);
+                    Checkout(items); //передается весь список товаров
                     break;
                 case "2":
                     Console.WriteLine("Введите ID товара, который хотите купить: ");
                     string inputId = Console.ReadLine();
                     if (int.TryParse(inputId, out int productId))
                     {
+                        //ищем товар в корзине
                         var singleItem = items.FirstOrDefault(p => p.ProductId == productId);
                         if (singleItem != null)
                         {
+                            //передаем список из этого одного товара
                             Checkout(new List<CartItem> { singleItem });
                         }
                         else
@@ -162,6 +164,57 @@ namespace isip324_Mihelko
                     return;
             }
         }
+
+        public static void Checkout(List<CartItem> itemsToBuy) //метод оформления заказа
+        {
+            Console.Clear();
+            Console.WriteLine("-------ОФОРМЛЕНИЕ ЗАКАЗА--------");
+            var pickuppoints = Core.Context.PickupPoint.Where(u => u.IsActive == true).ToList();
+            
+            Console.WriteLine("Доступные пункты выдачи (ПВЗ): ");
+            foreach (var pp in pickuppoints)
+            {
+                Console.WriteLine($"ID: {pp.Id} | Адрес: {pp.Address}");
+            }
+
+            Console.WriteLine("\nВведите ID нужного ПВЗ: ");
+            string inputPvz = Console.ReadLine();
+            int ppId = int.Parse(inputPvz); //превращаем текст в число
+
+            decimal total = 0;
+            foreach (var item in itemsToBuy)
+            {
+                total += item.Product.Price * item.Quantity;
+            }
+
+            Order newOrder = new Order();
+            newOrder.UserId = CurrentUser.Id;
+            newOrder.PickupPointId = ppId;
+            newOrder.CreatedAt = DateTime.UtcNow;
+            newOrder.TotalPrice = total;
+
+            Core.Context.Order.Add(newOrder);
+            Core.Context.SaveChanges();
+
+            //перенос товаров из корзины в позиции заказа orderProduct
+            foreach (var item in itemsToBuy)
+            {
+                OrderProduct op = new OrderProduct();
+                op.OrderId = newOrder.Id; //привязываем к созданному заказу 
+                op.ProductId = item.ProductId; //какой товар
+                op.Quantity = item.Quantity; //сколько штук
+                op.PriceAtPurchase = item.Product.Price; //запоминаем цену на момент покупки
+                Core.Context.OrderProduct.Add(op);
+            }
+            Core.Context.CartItem.RemoveRange(itemsToBuy); //очищение корзины от купленных товаров
+            Core.Context.SaveChanges();
+
+            Console.WriteLine($"\nЗаказ успешно оформлен! Сумма: {total} руб.");
+            Console.WriteLine("Нажмите любую клавишу...");
+            Console.ReadKey();
+        }
+
+
         static void Main(string[] args)
         {
             while (true)
