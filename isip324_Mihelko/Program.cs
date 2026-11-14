@@ -10,6 +10,7 @@ namespace isip324_Mihelko
     {
         static void Main(string[] args)
         {
+
         }
     }
 }
