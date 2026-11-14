@@ -214,6 +214,42 @@ namespace isip324_Mihelko
             Console.ReadKey();
         }
 
+        public static void ShowOrders()
+        {
+            Console.Clear();
+            Console.WriteLine("-------МОИ ЗАКАЗЫ--------");
+            //берем все заказы текущего пользователя и сортируем по дате (от старых к новым)
+            var orders = Core.Context.Order
+            .Where(o => o.UserId == CurrentUser.Id)
+            .OrderBy(o => o.CreatedAt)
+            .ToList();
+
+            if (orders.Count == 0)
+            {
+                Console.WriteLine("\nУ вас пока нет заказов.");
+                Console.ReadKey();
+                return;
+            }
+
+            //выводится каждый заказ
+            foreach (var order in orders)
+            {
+                Console.WriteLine($"\n------------------------------------------");
+                Console.WriteLine($"Заказ №{order.Id} | Дата: {order.CreatedAt:dd.MM.yyyy HH:mm}");
+                Console.WriteLine($"Пункт выдачи: {order.PickupPoint.Address}");
+                Console.WriteLine($"Итоговая сумма: {order.TotalPrice} руб.");
+                Console.WriteLine($"Товары в заказе:");
+                //берем товары, которые были в этом заказе
+                var orderProducts = Core.Context.OrderProduct.Where(op => op.OrderId == order.Id).ToList();
+                foreach (var op in orderProducts)
+                {
+                    Console.WriteLine($"  - {op.Product.Name} | {op.Quantity} шт. | {op.PriceAtPurchase} руб.");
+                }
+            }
+
+            Console.WriteLine("\nНажмите любую клавишу для возврата в меню...");
+            Console.ReadKey();
+        }
 
         static void Main(string[] args)
         {
