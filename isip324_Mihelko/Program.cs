@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,62 @@ namespace isip324_Mihelko
     internal class Program
     {
         static User CurrentUser = null;
+        public static void Register()
+        {
+            Console.WriteLine("Введите логин: ");
+            string login = Console.ReadLine();
+            User existingUser = Core.Context.User.FirstOrDefault(u => u.Username == login);
+            if (existingUser != null)
+            {
+                Console.WriteLine("Этот логин уже занят! Попробуйте другой.");
+                Console.ReadKey(); 
+                return; 
+            }
+
+            Console.WriteLine("Введите пароль: ");
+            string parol1 = Console.ReadLine();
+            Console.WriteLine("Повторите введенный пароль: ");
+            string parol2 = Console.ReadLine();
+            if (parol1 != parol2)
+            {
+                Console.WriteLine("Пароли не совпадают! Попробуйте снова...");
+                Console.ReadKey();
+                return;
+            }
+            else
+            {
+                User newUser = new User();
+                newUser.Username = login;
+                newUser.PasswordHash = parol1;
+                newUser.CreatedAt = DateTime.UtcNow;
+
+                Core.Context.User.Add(newUser);
+                Core.Context.SaveChanges();
+                Console.WriteLine("Успешно зарегистрированы! Теперь можете войти.");
+                Console.ReadKey();
+            }
+        }
+        public static void Login()
+        {
+            Console.WriteLine("Введите логин: ");
+            string login = Console.ReadLine();
+            Console.WriteLine("Введите пароль: ");
+            string parol = Console.ReadLine();
+            User existingUser = Core.Context.User.FirstOrDefault(u => u.Username == login && u.PasswordHash == parol);
+            if (existingUser != null)
+            {
+                CurrentUser = existingUser;
+                Console.WriteLine($"Успешный вход. Привет, {login}!");
+                Console.ReadKey();
+                return;
+            }
+            else
+            {
+                Console.WriteLine("Неверный логин или пароль. Попробуйте снова...");
+                Console.ReadKey();                
+            }
+            
+        }
         static void Main(string[] args)
         {
             while (true)
@@ -73,8 +130,7 @@ namespace isip324_Mihelko
                             Console.ReadKey();
                             break;
                     }
-                }
-                                
+                }                               
             }
         }
     }
